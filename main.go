@@ -7,12 +7,13 @@ import (
 )
 
 const (
-	screenWidth  = 600
-	screenHeight = 600
-	gridWidth    = 10
-	gridHeight   = 20
-	squareSize   = 26
-	tickDuration = 10
+	screenWidth         = 600
+	screenHeight        = 600
+	gridWidth           = 10
+	gridHeight          = 20
+	squareSize          = 26
+	nextPieceSquareSize = 18
+	tickDuration        = 10
 )
 
 type Square struct {
@@ -22,21 +23,32 @@ type Square struct {
 type Game struct {
 	Grid         [gridWidth][gridHeight + 2]*Square
 	currentPiece Piece
+	pieceQueue   []Piece
 	nextTick     int
 	bag          SevenBag
 }
 
 func newGame() *Game {
-	bag := newSevenBag()
-	piece := bag.getPiece()
-	return &Game{
-		bag:          *bag,
-		currentPiece: piece,
+	game := &Game{}
+	game.bag = *newSevenBag()
+	game.currentPiece = game.bag.getPiece()
+	game.pieceQueue = make([]Piece, 5)
+	for i := 0; i < 5; i++ {
+		game.pieceQueue[i] = game.bag.getPiece()
 	}
+	game.currentPiece.MoveToTop()
+	return game
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return screenWidth, screenHeight
+}
+
+func (g *Game) nextPiece() {
+	g.currentPiece = g.pieceQueue[0]
+	g.currentPiece.MoveToTop()
+	g.pieceQueue = append(g.pieceQueue[1:], g.bag.getPiece())
+
 }
 
 func (g *Game) dropPiece() bool {
@@ -73,7 +85,7 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
 		g.currentPiece.RotateCounterClockwise()
 		for _, block := range g.currentPiece.BlockCoordinates() {
-			if block[0] < 0 || block[0] >= gridWidth || block[1] < 0 || block[1] >= gridHeight {
+			if block[0] < 0 || block[0] >= gridWidth || block[1] < 0 || block[1] >= gridHeight+2 {
 				g.currentPiece.RotateClockwise()
 				break
 			}
@@ -88,7 +100,7 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
 		g.currentPiece.RotateClockwise()
 		for _, block := range g.currentPiece.BlockCoordinates() {
-			if block[0] < 0 || block[0] >= gridWidth || block[1] < 0 || block[1] >= gridHeight {
+			if block[0] < 0 || block[0] >= gridWidth || block[1] < 0 || block[1] >= gridHeight+2 {
 				g.currentPiece.RotateCounterClockwise()
 				break
 			}
@@ -98,12 +110,17 @@ func (g *Game) Update() error {
 			}
 		}
 	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyW) {
+		for g.dropPiece() {
+
+		}
+	}
 	if g.nextTick == 0 {
 		if !g.dropPiece() {
 			for _, block := range g.currentPiece.BlockCoordinates() {
 				g.Grid[block[0]][block[1]] = &Square{Color: g.currentPiece.Color()}
 			}
-			g.currentPiece = g.bag.getPiece()
+			g.nextPiece()
 		}
 		g.nextTick = tickDuration
 		g.lineDestruction()
@@ -158,16 +175,31 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 
 	}
+	g.drawNext(screen)
 }
 
 func (g *Game) drawSquare(square Square, column, row int, screen *ebiten.Image) {
-	x := (screenWidth-gridWidth*squareSize)/2 + column*squareSize
+	x := 80 + column*squareSize
 	y := screenHeight - (row+2)*squareSize
 	for i := 1; i < squareSize-1; i++ {
 		for j := 1; j < squareSize-1; j++ {
 			screen.Set(x+i, y+j, square.Color)
 		}
 
+	}
+
+}
+func (g *Game) drawNext(screen *ebiten.Image) {
+	for i, piece := range g.pieceQueue {
+		for _, block := range piece.BlockCoordinates() {
+			println(block[0], block[1])
+			for x := 1; x < nextPieceSquareSize-1; x++ {
+				for y := 1; y < nextPieceSquareSize-1; y++ {
+					screen.Set(400+x+squareSize+block[0]*nextPieceSquareSize, 100+i*nextPieceSquareSize*4-block[1]*nextPieceSquareSize+y, piece.Color())
+				}
+
+			}
+		}
 	}
 
 }

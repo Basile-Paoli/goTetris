@@ -10,6 +10,7 @@ type Piece interface {
 	Drop()
 	MoveLeft()
 	MoveRight()
+	MoveToTop()
 }
 
 type TPiece struct {
@@ -18,7 +19,7 @@ type TPiece struct {
 }
 
 func (t *TPiece) Color() color.Color {
-	return color.RGBA{R: 128, G: 0, B: 128, A: 255}
+	return color.RGBA{R: 153, G: 0, B: 255, A: 255}
 }
 
 func (t *TPiece) RotateClockwise() {
@@ -72,8 +73,11 @@ func (t *TPiece) MoveLeft() {
 func (t *TPiece) MoveRight() {
 	t.center[0]++
 }
+func (t *TPiece) MoveToTop() {
+	t.center = [2]int{gridWidth/2 - 1, gridHeight}
+}
 func NewTPiece() *TPiece {
-	return &TPiece{center: [2]int{gridWidth/2 - 1, gridHeight}, rotation: 0}
+	return &TPiece{}
 }
 
 type IPiece struct {
@@ -82,7 +86,7 @@ type IPiece struct {
 }
 
 func (i *IPiece) Color() color.Color {
-	return color.RGBA{R: 0, G: 128, B: 128, A: 255}
+	return color.RGBA{R: 0, G: 255, B: 255, A: 255}
 }
 func (i *IPiece) RotateClockwise() {
 	i.rotation = (i.rotation + 1) % 4
@@ -98,31 +102,31 @@ func (i *IPiece) BlockCoordinates() [4][2]int {
 	switch i.rotation {
 	case 0:
 		coordinates = [4][2]int{
-			{i.center[0] - 2, i.center[1] + 1},
 			{i.center[0] - 1, i.center[1] + 1},
 			{i.center[0], i.center[1] + 1},
 			{i.center[0] + 1, i.center[1] + 1},
+			{i.center[0] + 2, i.center[1] + 1},
 		}
 	case 1:
+		coordinates = [4][2]int{
+			{i.center[0] + 1, i.center[1] - 1},
+			{i.center[0] + 1, i.center[1]},
+			{i.center[0] + 1, i.center[1] + 1},
+			{i.center[0] + 1, i.center[1] + 2},
+		}
+	case 2:
+		coordinates = [4][2]int{
+			{i.center[0] - 1, i.center[1]},
+			{i.center[0], i.center[1]},
+			{i.center[0] + 1, i.center[1]},
+			{i.center[0] + 2, i.center[1]},
+		}
+	case 3:
 		coordinates = [4][2]int{
 			{i.center[0], i.center[1] - 1},
 			{i.center[0], i.center[1]},
 			{i.center[0], i.center[1] + 1},
 			{i.center[0], i.center[1] + 2},
-		}
-	case 2:
-		coordinates = [4][2]int{
-			{i.center[0] - 2, i.center[1]},
-			{i.center[0] - 1, i.center[1]},
-			{i.center[0], i.center[1]},
-			{i.center[0] + 1, i.center[1]},
-		}
-	case 3:
-		coordinates = [4][2]int{
-			{i.center[0] - 1, i.center[1] - 1},
-			{i.center[0] - 1, i.center[1]},
-			{i.center[0] - 1, i.center[1] + 1},
-			{i.center[0] - 1, i.center[1] + 2},
 		}
 
 	}
@@ -134,8 +138,11 @@ func (i *IPiece) MoveLeft() {
 func (i *IPiece) MoveRight() {
 	i.center[0]++
 }
+func (i *IPiece) MoveToTop() {
+	i.center = [2]int{gridWidth/2 - 1, gridHeight}
+}
 func NewIPiece() *IPiece {
-	return &IPiece{center: [2]int{gridWidth / 2, gridHeight}, rotation: 0}
+	return &IPiece{}
 }
 
 type OPiece struct {
@@ -143,7 +150,7 @@ type OPiece struct {
 }
 
 func (o *OPiece) Color() color.Color {
-	return color.RGBA{R: 128, G: 128, B: 0, A: 255}
+	return color.RGBA{R: 255, G: 255, B: 0, A: 255}
 }
 func (o *OPiece) RotateClockwise()        {}
 func (o *OPiece) RotateCounterClockwise() {}
@@ -164,8 +171,11 @@ func (o *OPiece) MoveLeft() {
 func (o *OPiece) MoveRight() {
 	o.center[0]++
 }
+func (o *OPiece) MoveToTop() {
+	o.center = [2]int{gridWidth/2 - 1, gridHeight}
+}
 func NewOPiece() *OPiece {
-	return &OPiece{center: [2]int{gridWidth/2 - 1, gridHeight}}
+	return &OPiece{}
 }
 
 type SPiece struct {
@@ -174,7 +184,7 @@ type SPiece struct {
 }
 
 func (s *SPiece) Color() color.Color {
-	return color.RGBA{R: 0, G: 128, B: 0, A: 255}
+	return color.RGBA{R: 0, G: 255, B: 0, A: 255}
 }
 func (s *SPiece) RotateClockwise() {
 	s.rotation = (s.rotation + 1) % 4
@@ -225,8 +235,11 @@ func (s *SPiece) MoveLeft() {
 func (s *SPiece) MoveRight() {
 	s.center[0]++
 }
+func (s *SPiece) MoveToTop() {
+	s.center = [2]int{gridWidth/2 - 1, gridHeight}
+}
 func NewSPiece() *SPiece {
-	return &SPiece{center: [2]int{gridWidth/2 - 1, gridHeight}, rotation: 0}
+	return &SPiece{}
 }
 
 type ZPiece struct {
@@ -235,7 +248,7 @@ type ZPiece struct {
 }
 
 func (z *ZPiece) Color() color.Color {
-	return color.RGBA{R: 128, G: 0, B: 0, A: 255}
+	return color.RGBA{R: 255, G: 0, B: 0, A: 255}
 }
 func (z *ZPiece) RotateClockwise() {
 	z.rotation = (z.rotation + 1) % 4
@@ -265,10 +278,10 @@ func (z *ZPiece) BlockCoordinates() [4][2]int {
 		}
 	case 2:
 		coordinates = [4][2]int{
-			{z.center[0] - 1, z.center[1] - 1},
-			{z.center[0], z.center[1] - 1},
+			{z.center[0] - 1, z.center[1]},
 			{z.center[0], z.center[1]},
-			{z.center[0] + 1, z.center[1]},
+			{z.center[0], z.center[1] - 1},
+			{z.center[0] + 1, z.center[1] - 1},
 		}
 	case 3:
 		coordinates = [4][2]int{
@@ -286,8 +299,11 @@ func (z *ZPiece) MoveLeft() {
 func (z *ZPiece) MoveRight() {
 	z.center[0]++
 }
+func (z *ZPiece) MoveToTop() {
+	z.center = [2]int{gridWidth/2 - 1, gridHeight}
+}
 func NewZPiece() *ZPiece {
-	return &ZPiece{center: [2]int{gridWidth/2 - 1, gridHeight}, rotation: 0}
+	return &ZPiece{}
 }
 
 type JPiece struct {
@@ -296,7 +312,7 @@ type JPiece struct {
 }
 
 func (j *JPiece) Color() color.Color {
-	return color.RGBA{R: 0, G: 0, B: 128, A: 255}
+	return color.RGBA{R: 0, G: 0, B: 255, A: 255}
 }
 func (j *JPiece) RotateClockwise() {
 	j.rotation = (j.rotation + 1) % 4
@@ -347,8 +363,11 @@ func (j *JPiece) MoveLeft() {
 func (j *JPiece) MoveRight() {
 	j.center[0]++
 }
+func (j *JPiece) MoveToTop() {
+	j.center = [2]int{gridWidth/2 - 1, gridHeight}
+}
 func NewJPiece() *JPiece {
-	return &JPiece{center: [2]int{gridWidth/2 - 1, gridHeight}, rotation: 0}
+	return &JPiece{}
 }
 
 type LPiece struct {
@@ -357,7 +376,7 @@ type LPiece struct {
 }
 
 func (l *LPiece) Color() color.Color {
-	return color.RGBA{R: 255, G: 128, B: 0, A: 255}
+	return color.RGBA{R: 255, G: 170, B: 0, A: 255}
 
 }
 func (l *LPiece) RotateClockwise() {
@@ -410,6 +429,10 @@ func (l *LPiece) MoveLeft() {
 func (l *LPiece) MoveRight() {
 	l.center[0]++
 }
+func (l *LPiece) MoveToTop() {
+	l.center = [2]int{gridWidth/2 - 1, gridHeight}
+
+}
 func NewLPiece() *LPiece {
-	return &LPiece{center: [2]int{gridWidth/2 - 1, gridHeight}, rotation: 0}
+	return &LPiece{}
 }
