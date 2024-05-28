@@ -11,6 +11,7 @@ type Piece interface {
 	MoveLeft()
 	MoveRight()
 	MoveToTop()
+	Copy() Piece
 }
 
 type TPiece struct {
@@ -80,6 +81,13 @@ func NewTPiece() *TPiece {
 	return &TPiece{}
 }
 
+func (t *TPiece) Copy() Piece {
+	return &TPiece{
+		center:   t.center,
+		rotation: t.rotation,
+	}
+}
+
 type IPiece struct {
 	center   [2]int
 	rotation int
@@ -141,6 +149,13 @@ func (i *IPiece) MoveRight() {
 func (i *IPiece) MoveToTop() {
 	i.center = [2]int{gridWidth/2 - 1, gridHeight}
 }
+func (i *IPiece) Copy() Piece {
+	return &IPiece{
+		center:   i.center,
+		rotation: i.rotation,
+	}
+
+}
 func NewIPiece() *IPiece {
 	return &IPiece{}
 }
@@ -173,6 +188,11 @@ func (o *OPiece) MoveRight() {
 }
 func (o *OPiece) MoveToTop() {
 	o.center = [2]int{gridWidth/2 - 1, gridHeight}
+}
+func (o *OPiece) Copy() Piece {
+	return &OPiece{
+		center: o.center,
+	}
 }
 func NewOPiece() *OPiece {
 	return &OPiece{}
@@ -238,6 +258,12 @@ func (s *SPiece) MoveRight() {
 func (s *SPiece) MoveToTop() {
 	s.center = [2]int{gridWidth/2 - 1, gridHeight}
 }
+func (s *SPiece) Copy() Piece {
+	return &SPiece{
+		center:   s.center,
+		rotation: s.rotation,
+	}
+}
 func NewSPiece() *SPiece {
 	return &SPiece{}
 }
@@ -302,6 +328,13 @@ func (z *ZPiece) MoveRight() {
 func (z *ZPiece) MoveToTop() {
 	z.center = [2]int{gridWidth/2 - 1, gridHeight}
 }
+func (z *ZPiece) Copy() Piece {
+	return &ZPiece{
+		center:   z.center,
+		rotation: z.rotation,
+	}
+
+}
 func NewZPiece() *ZPiece {
 	return &ZPiece{}
 }
@@ -365,6 +398,12 @@ func (j *JPiece) MoveRight() {
 }
 func (j *JPiece) MoveToTop() {
 	j.center = [2]int{gridWidth/2 - 1, gridHeight}
+}
+func (j *JPiece) Copy() Piece {
+	return &JPiece{
+		center:   j.center,
+		rotation: j.rotation,
+	}
 }
 func NewJPiece() *JPiece {
 	return &JPiece{}
@@ -432,6 +471,12 @@ func (l *LPiece) MoveRight() {
 func (l *LPiece) MoveToTop() {
 	l.center = [2]int{gridWidth/2 - 1, gridHeight}
 
+}
+func (l *LPiece) Copy() Piece {
+	return &LPiece{
+		center:   l.center,
+		rotation: l.rotation,
+	}
 }
 func NewLPiece() *LPiece {
 	return &LPiece{}
