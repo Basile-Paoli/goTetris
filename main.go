@@ -15,6 +15,8 @@ const (
 	nextPieceSquareSize = 18
 	tickDuration        = 10
 	ticksBeforeLock     = 10
+	defaultDAS          = 8
+	defaultARR          = 3
 )
 
 type Square struct {
@@ -29,8 +31,11 @@ type Game struct {
 	ticksSinceLastDrop int
 	bag                SevenBag
 	holdPiece          Piece
+	hasHeld            bool
 	ghostPiece         Piece
 	gameOver           bool
+	das                int
+	arr                int
 }
 
 func newGame() *Game {
@@ -42,6 +47,8 @@ func newGame() *Game {
 		game.pieceQueue[i] = game.bag.getPiece()
 	}
 	game.currentPiece.MoveToTop()
+	game.das = defaultDAS
+	game.arr = defaultARR
 	return game
 }
 
@@ -99,6 +106,7 @@ func (g *Game) Update() error {
 				}
 				g.nextPiece()
 				g.ticksSinceLastDrop = 0
+				g.hasHeld = false
 			}
 		}
 		g.nextTick = tickDuration
@@ -110,6 +118,46 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) processInputs() {
+	if ebiten.IsKeyPressed(ebiten.KeyA) {
+		g.das--
+		if g.das <= 0 {
+			g.arr--
+			if g.arr <= 0 {
+				legal := true
+				for _, block := range g.currentPiece.BlockCoordinates() {
+					if block[0] == 0 || g.Grid[block[0]-1][block[1]] != nil {
+						legal = false
+					}
+				}
+				if legal {
+					g.currentPiece.MoveLeft()
+				}
+				g.arr = defaultARR
+			}
+		}
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyD) {
+		g.das--
+		if g.das <= 0 {
+			g.arr--
+			if g.arr <= 0 {
+				legal := true
+				for _, block := range g.currentPiece.BlockCoordinates() {
+					if block[0] == gridWidth-1 || g.Grid[block[0]+1][block[1]] != nil {
+						legal = false
+					}
+				}
+				if legal {
+					g.currentPiece.MoveRight()
+				}
+				g.arr = defaultARR
+			}
+		}
+	}
+	if !ebiten.IsKeyPressed(ebiten.KeyA) && !ebiten.IsKeyPressed(ebiten.KeyD) {
+		g.das = defaultDAS
+	}
+
 	if inpututil.IsKeyJustPressed(ebiten.KeySemicolon) {
 		*g = *newGame()
 	}
@@ -127,15 +175,16 @@ func (g *Game) processInputs() {
 		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-		if g.holdPiece == nil {
+		if g.holdPiece == nil && !g.hasHeld {
 			g.currentPiece.MoveToTop()
 			g.holdPiece = g.currentPiece
 			g.nextPiece()
-		} else {
+		} else if !g.hasHeld {
 			g.currentPiece.MoveToTop()
 			g.currentPiece, g.holdPiece = g.holdPiece, g.currentPiece
 			g.currentPiece.MoveToTop()
 		}
+		g.hasHeld = true
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyA) {
