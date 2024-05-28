@@ -14,6 +14,7 @@ const (
 	squareSize          = 26
 	nextPieceSquareSize = 18
 	tickDuration        = 10
+	ticksBeforeLock     = 10
 )
 
 type Square struct {
@@ -21,14 +22,15 @@ type Square struct {
 }
 
 type Game struct {
-	Grid         [gridWidth][gridHeight + 2]*Square
-	currentPiece Piece
-	pieceQueue   []Piece
-	nextTick     int
-	bag          SevenBag
-	holdPiece    Piece
-	ghostPiece   Piece
-	gameOver     bool
+	Grid               [gridWidth][gridHeight + 2]*Square
+	currentPiece       Piece
+	pieceQueue         []Piece
+	nextTick           int
+	ticksSinceLastDrop int
+	bag                SevenBag
+	holdPiece          Piece
+	ghostPiece         Piece
+	gameOver           bool
 }
 
 func newGame() *Game {
@@ -90,10 +92,14 @@ func (g *Game) Update() error {
 	g.processInputs()
 	if g.nextTick == 0 {
 		if !g.dropPiece() {
-			for _, block := range g.currentPiece.BlockCoordinates() {
-				g.Grid[block[0]][block[1]] = &Square{Color: g.currentPiece.Color()}
+			g.ticksSinceLastDrop++
+			if g.ticksSinceLastDrop >= ticksBeforeLock {
+				for _, block := range g.currentPiece.BlockCoordinates() {
+					g.Grid[block[0]][block[1]] = &Square{Color: g.currentPiece.Color()}
+				}
+				g.nextPiece()
+				g.ticksSinceLastDrop = 0
 			}
-			g.nextPiece()
 		}
 		g.nextTick = tickDuration
 		g.lineDestruction()
@@ -104,12 +110,21 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) processInputs() {
+	if inpututil.IsKeyJustPressed(ebiten.KeySemicolon) {
+		*g = *newGame()
+	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyW) {
 		for g.dropPiece() {
 
 		}
 		g.nextTick = 0
+		g.ticksSinceLastDrop = ticksBeforeLock
 		return
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+		for g.dropPiece() {
+
+		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		if g.holdPiece == nil {
@@ -147,32 +162,11 @@ func (g *Game) processInputs() {
 		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
-		g.currentPiece.RotateCounterClockwise()
-		for _, block := range g.currentPiece.BlockCoordinates() {
-			if block[0] < 0 || block[0] >= gridWidth || block[1] < 0 || block[1] >= gridHeight+2 {
-				g.currentPiece.RotateClockwise()
-				break
-			}
-			if g.Grid[block[0]][block[1]] != nil {
-				g.currentPiece.RotateClockwise()
-				break
-			}
-
-		}
+		g.currentPiece.RotateCounterClockwise(g.Grid)
 
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
-		g.currentPiece.RotateClockwise()
-		for _, block := range g.currentPiece.BlockCoordinates() {
-			if block[0] < 0 || block[0] >= gridWidth || block[1] < 0 || block[1] >= gridHeight+2 {
-				g.currentPiece.RotateCounterClockwise()
-				break
-			}
-			if g.Grid[block[0]][block[1]] != nil {
-				g.currentPiece.RotateCounterClockwise()
-				break
-			}
-		}
+		g.currentPiece.RotateClockwise(g.Grid)
 	}
 }
 
@@ -270,7 +264,6 @@ func (g *Game) drawHold(screen *ebiten.Image) {
 	for _, block := range g.holdPiece.BlockCoordinates() {
 		for x := 1; x < nextPieceSquareSize-1; x++ {
 			for y := 1; y < nextPieceSquareSize-1; y++ {
-				println(baseX+x+block[0]*nextPieceSquareSize, baseY+y+block[1]*nextPieceSquareSize)
 				screen.Set(baseX+x+block[0]*nextPieceSquareSize, baseY+y-block[1]*nextPieceSquareSize, g.holdPiece.Color())
 			}
 		}
