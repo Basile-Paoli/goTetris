@@ -1,6 +1,8 @@
 package main
 
-import "math/rand/v2"
+import (
+	"math/rand/v2"
+)
 
 type SevenBag []Piece
 

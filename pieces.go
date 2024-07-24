@@ -59,16 +59,17 @@ func (t *TPiece) Color() color.Color {
 func (t *TPiece) RotateClockwise(grid [gridWidth][gridHeight + 2]*Square) {
 
 	t.rotation = (t.rotation + 1) % 4
+
 rotationLoop:
-	for _, rotations := range JLTSZClockwiseRotationMap()[t.rotation] {
+	for _, translationVector := range JLTSZClockwiseRotationMap()[t.rotation] {
 		for _, block := range t.BlockCoordinates() {
-			x, y := block[0]+rotations[0], block[1]+rotations[1]
+			x, y := block[0]+translationVector[0], block[1]+translationVector[1]
 			if x < 0 || x >= gridWidth || y < 0 || y >= gridHeight+2 || grid[x][y] != nil {
 				continue rotationLoop
 			}
 		}
-		t.center[0] += rotations[0]
-		t.center[1] += rotations[1]
+		t.center[0] += translationVector[0]
+		t.center[1] += translationVector[1]
 		return
 	}
 	t.rotation = (t.rotation + 3) % 4
@@ -77,15 +78,15 @@ rotationLoop:
 func (t *TPiece) RotateCounterClockwise(grid [gridWidth][gridHeight + 2]*Square) {
 	t.rotation = (t.rotation + 3) % 4
 rotationLoop:
-	for _, rotations := range JLTSZCounterClockwiseRotationMap()[t.rotation] {
+	for _, translationVector := range JLTSZCounterClockwiseRotationMap()[t.rotation] {
 		for _, block := range t.BlockCoordinates() {
-			x, y := block[0]+rotations[0], block[1]+rotations[1]
+			x, y := block[0]+translationVector[0], block[1]+translationVector[1]
 			if x < 0 || x >= gridWidth || y < 0 || y >= gridHeight+2 || grid[x][y] != nil {
 				continue rotationLoop
 			}
 		}
-		t.center[0] += rotations[0]
-		t.center[1] += rotations[1]
+		t.center[0] += translationVector[0]
+		t.center[1] += translationVector[1]
 		return
 	}
 	t.rotation = (t.rotation + 1) % 4
@@ -136,9 +137,7 @@ func (t *TPiece) MoveRight() {
 }
 func (t *TPiece) MoveToTop() {
 	t.center = [2]int{gridWidth/2 - 1, gridHeight}
-}
-func NewTPiece() *TPiece {
-	return &TPiece{}
+	t.rotation = 0
 }
 
 func (t *TPiece) Copy() Piece {
@@ -146,6 +145,10 @@ func (t *TPiece) Copy() Piece {
 		center:   t.center,
 		rotation: t.rotation,
 	}
+}
+
+func NewTPiece() *TPiece {
+	return &TPiece{}
 }
 
 type IPiece struct {
@@ -160,15 +163,15 @@ func (i *IPiece) RotateClockwise(grid [gridWidth][gridHeight + 2]*Square) {
 
 	i.rotation = (i.rotation + 1) % 4
 rotationLoop:
-	for _, rotations := range IClockwiseRotationMap()[i.rotation] {
+	for _, translationVector := range IClockwiseRotationMap()[i.rotation] {
 		for _, block := range i.BlockCoordinates() {
-			x, y := block[0]+rotations[0], block[1]+rotations[1]
+			x, y := block[0]+translationVector[0], block[1]+translationVector[1]
 			if x < 0 || x >= gridWidth || y < 0 || y >= gridHeight+2 || grid[x][y] != nil {
 				continue rotationLoop
 			}
 		}
-		i.center[0] += rotations[0]
-		i.center[1] += rotations[1]
+		i.center[0] += translationVector[0]
+		i.center[1] += translationVector[1]
 		return
 	}
 	i.rotation = (i.rotation + 3) % 4
@@ -176,15 +179,15 @@ rotationLoop:
 func (i *IPiece) RotateCounterClockwise(grid [gridWidth][gridHeight + 2]*Square) {
 	i.rotation = (i.rotation + 3) % 4
 rotationLoop:
-	for _, rotations := range ICounterClockwiseRotationMap()[i.rotation] {
+	for _, translationVector := range ICounterClockwiseRotationMap()[i.rotation] {
 		for _, block := range i.BlockCoordinates() {
-			x, y := block[0]+rotations[0], block[1]+rotations[1]
+			x, y := block[0]+translationVector[0], block[1]+translationVector[1]
 			if x < 0 || x >= gridWidth || y < 0 || y >= gridHeight+2 || grid[x][y] != nil {
 				continue rotationLoop
 			}
 		}
-		i.center[0] += rotations[0]
-		i.center[1] += rotations[1]
+		i.center[0] += translationVector[0]
+		i.center[1] += translationVector[1]
 		return
 	}
 	i.rotation = (i.rotation + 1) % 4
@@ -235,7 +238,8 @@ func (i *IPiece) MoveRight() {
 	i.center[0]++
 }
 func (i *IPiece) MoveToTop() {
-	i.center = [2]int{gridWidth/2 - 1, gridHeight}
+	i.center = [2]int{gridWidth/2 - 1, gridHeight - 1}
+	i.rotation = 0
 }
 func (i *IPiece) Copy() Piece {
 	return &IPiece{
@@ -255,8 +259,8 @@ type OPiece struct {
 func (o *OPiece) Color() color.Color {
 	return color.RGBA{R: 255, G: 255, B: 0, A: 255}
 }
-func (o *OPiece) RotateClockwise(grid [gridWidth][gridHeight + 2]*Square)        {}
-func (o *OPiece) RotateCounterClockwise(grid [gridWidth][gridHeight + 2]*Square) {}
+func (o *OPiece) RotateClockwise([gridWidth][gridHeight + 2]*Square) {}
+func (o *OPiece) RotateCounterClockwise([10][22]*Square)             {}
 func (o *OPiece) Drop() {
 	o.center[1]--
 }
@@ -298,15 +302,15 @@ func (s *SPiece) RotateClockwise(grid [gridWidth][gridHeight + 2]*Square) {
 
 	s.rotation = (s.rotation + 1) % 4
 rotationLoop:
-	for _, rotations := range JLTSZClockwiseRotationMap()[s.rotation] {
+	for _, translationVector := range JLTSZClockwiseRotationMap()[s.rotation] {
 		for _, block := range s.BlockCoordinates() {
-			x, y := block[0]+rotations[0], block[1]+rotations[1]
+			x, y := block[0]+translationVector[0], block[1]+translationVector[1]
 			if x < 0 || x >= gridWidth || y < 0 || y >= gridHeight+2 || grid[x][y] != nil {
 				continue rotationLoop
 			}
 		}
-		s.center[0] += rotations[0]
-		s.center[1] += rotations[1]
+		s.center[0] += translationVector[0]
+		s.center[1] += translationVector[1]
 		return
 	}
 	s.rotation = (s.rotation + 3) % 4
@@ -314,15 +318,15 @@ rotationLoop:
 func (s *SPiece) RotateCounterClockwise(grid [gridWidth][gridHeight + 2]*Square) {
 	s.rotation = (s.rotation + 3) % 4
 rotationLoop:
-	for _, rotations := range JLTSZCounterClockwiseRotationMap()[s.rotation] {
+	for _, translationVector := range JLTSZCounterClockwiseRotationMap()[s.rotation] {
 		for _, block := range s.BlockCoordinates() {
-			x, y := block[0]+rotations[0], block[1]+rotations[1]
+			x, y := block[0]+translationVector[0], block[1]+translationVector[1]
 			if x < 0 || x >= gridWidth || y < 0 || y >= gridHeight+2 || grid[x][y] != nil {
 				continue rotationLoop
 			}
 		}
-		s.center[0] += rotations[0]
-		s.center[1] += rotations[1]
+		s.center[0] += translationVector[0]
+		s.center[1] += translationVector[1]
 		return
 	}
 	s.rotation = (s.rotation + 1) % 4
@@ -372,6 +376,7 @@ func (s *SPiece) MoveRight() {
 }
 func (s *SPiece) MoveToTop() {
 	s.center = [2]int{gridWidth/2 - 1, gridHeight}
+	s.rotation = 0
 }
 func (s *SPiece) Copy() Piece {
 	return &SPiece{
@@ -395,15 +400,15 @@ func (z *ZPiece) RotateClockwise(grid [gridWidth][gridHeight + 2]*Square) {
 
 	z.rotation = (z.rotation + 1) % 4
 rotationLoop:
-	for _, rotations := range JLTSZClockwiseRotationMap()[z.rotation] {
+	for _, translationVector := range JLTSZClockwiseRotationMap()[z.rotation] {
 		for _, block := range z.BlockCoordinates() {
-			x, y := block[0]+rotations[0], block[1]+rotations[1]
+			x, y := block[0]+translationVector[0], block[1]+translationVector[1]
 			if x < 0 || x >= gridWidth || y < 0 || y >= gridHeight+2 || grid[x][y] != nil {
 				continue rotationLoop
 			}
 		}
-		z.center[0] += rotations[0]
-		z.center[1] += rotations[1]
+		z.center[0] += translationVector[0]
+		z.center[1] += translationVector[1]
 		return
 	}
 	z.rotation = (z.rotation + 3) % 4
@@ -411,15 +416,15 @@ rotationLoop:
 func (z *ZPiece) RotateCounterClockwise(grid [gridWidth][gridHeight + 2]*Square) {
 	z.rotation = (z.rotation + 3) % 4
 rotationLoop:
-	for _, rotations := range JLTSZCounterClockwiseRotationMap()[z.rotation] {
+	for _, translationVector := range JLTSZCounterClockwiseRotationMap()[z.rotation] {
 		for _, block := range z.BlockCoordinates() {
-			x, y := block[0]+rotations[0], block[1]+rotations[1]
+			x, y := block[0]+translationVector[0], block[1]+translationVector[1]
 			if x < 0 || x >= gridWidth || y < 0 || y >= gridHeight+2 || grid[x][y] != nil {
 				continue rotationLoop
 			}
 		}
-		z.center[0] += rotations[0]
-		z.center[1] += rotations[1]
+		z.center[0] += translationVector[0]
+		z.center[1] += translationVector[1]
 		return
 	}
 	z.rotation = (z.rotation + 1) % 4
@@ -469,14 +474,15 @@ func (z *ZPiece) MoveRight() {
 }
 func (z *ZPiece) MoveToTop() {
 	z.center = [2]int{gridWidth/2 - 1, gridHeight}
+	z.rotation = 0
 }
 func (z *ZPiece) Copy() Piece {
 	return &ZPiece{
 		center:   z.center,
 		rotation: z.rotation,
 	}
-
 }
+
 func NewZPiece() *ZPiece {
 	return &ZPiece{}
 }
@@ -489,19 +495,20 @@ type JPiece struct {
 func (j *JPiece) Color() color.Color {
 	return color.RGBA{R: 0, G: 0, B: 255, A: 255}
 }
+
 func (j *JPiece) RotateClockwise(grid [gridWidth][gridHeight + 2]*Square) {
 
 	j.rotation = (j.rotation + 1) % 4
 rotationLoop:
-	for _, rotations := range JLTSZClockwiseRotationMap()[j.rotation] {
+	for _, translationVector := range JLTSZClockwiseRotationMap()[j.rotation] {
 		for _, block := range j.BlockCoordinates() {
-			x, y := block[0]+rotations[0], block[1]+rotations[1]
+			x, y := block[0]+translationVector[0], block[1]+translationVector[1]
 			if x < 0 || x >= gridWidth || y < 0 || y >= gridHeight+2 || grid[x][y] != nil {
 				continue rotationLoop
 			}
 		}
-		j.center[0] += rotations[0]
-		j.center[1] += rotations[1]
+		j.center[0] += translationVector[0]
+		j.center[1] += translationVector[1]
 		return
 	}
 	j.rotation = (j.rotation + 3) % 4
@@ -509,15 +516,15 @@ rotationLoop:
 func (j *JPiece) RotateCounterClockwise(grid [gridWidth][gridHeight + 2]*Square) {
 	j.rotation = (j.rotation + 3) % 4
 rotationLoop:
-	for _, rotations := range JLTSZCounterClockwiseRotationMap()[j.rotation] {
+	for _, translationVector := range JLTSZCounterClockwiseRotationMap()[j.rotation] {
 		for _, block := range j.BlockCoordinates() {
-			x, y := block[0]+rotations[0], block[1]+rotations[1]
+			x, y := block[0]+translationVector[0], block[1]+translationVector[1]
 			if x < 0 || x >= gridWidth || y < 0 || y >= gridHeight+2 || grid[x][y] != nil {
 				continue rotationLoop
 			}
 		}
-		j.center[0] += rotations[0]
-		j.center[1] += rotations[1]
+		j.center[0] += translationVector[0]
+		j.center[1] += translationVector[1]
 		return
 	}
 	j.rotation = (j.rotation + 1) % 4
@@ -567,6 +574,7 @@ func (j *JPiece) MoveRight() {
 }
 func (j *JPiece) MoveToTop() {
 	j.center = [2]int{gridWidth/2 - 1, gridHeight}
+	j.rotation = 0
 }
 func (j *JPiece) Copy() Piece {
 	return &JPiece{
@@ -591,15 +599,15 @@ func (l *LPiece) RotateClockwise(grid [gridWidth][gridHeight + 2]*Square) {
 
 	l.rotation = (l.rotation + 1) % 4
 rotationLoop:
-	for _, rotations := range JLTSZClockwiseRotationMap()[l.rotation] {
+	for _, translationVector := range JLTSZClockwiseRotationMap()[l.rotation] {
 		for _, block := range l.BlockCoordinates() {
-			x, y := block[0]+rotations[0], block[1]+rotations[1]
+			x, y := block[0]+translationVector[0], block[1]+translationVector[1]
 			if x < 0 || x >= gridWidth || y < 0 || y >= gridHeight+2 || grid[x][y] != nil {
 				continue rotationLoop
 			}
 		}
-		l.center[0] += rotations[0]
-		l.center[1] += rotations[1]
+		l.center[0] += translationVector[0]
+		l.center[1] += translationVector[1]
 		return
 	}
 	l.rotation = (l.rotation + 3) % 4
@@ -607,15 +615,15 @@ rotationLoop:
 func (l *LPiece) RotateCounterClockwise(grid [gridWidth][gridHeight + 2]*Square) {
 	l.rotation = (l.rotation + 3) % 4
 rotationLoop:
-	for _, rotations := range JLTSZCounterClockwiseRotationMap()[l.rotation] {
+	for _, translationVector := range JLTSZCounterClockwiseRotationMap()[l.rotation] {
 		for _, block := range l.BlockCoordinates() {
-			x, y := block[0]+rotations[0], block[1]+rotations[1]
+			x, y := block[0]+translationVector[0], block[1]+translationVector[1]
 			if x < 0 || x >= gridWidth || y < 0 || y >= gridHeight+2 || grid[x][y] != nil {
 				continue rotationLoop
 			}
 		}
-		l.center[0] += rotations[0]
-		l.center[1] += rotations[1]
+		l.center[0] += translationVector[0]
+		l.center[1] += translationVector[1]
 		return
 	}
 	l.rotation = (l.rotation + 1) % 4
@@ -665,7 +673,7 @@ func (l *LPiece) MoveRight() {
 }
 func (l *LPiece) MoveToTop() {
 	l.center = [2]int{gridWidth/2 - 1, gridHeight}
-
+	l.rotation = 0
 }
 func (l *LPiece) Copy() Piece {
 	return &LPiece{
