@@ -9,7 +9,7 @@ const (
 	screenWidth         = 600
 	screenHeight        = 600
 	gridWidth           = 10
-	gridHeight          = 20
+	gridHeight          = 23
 	squareSize          = 26
 	nextPieceSquareSize = 18
 	tickDuration        = 10
@@ -22,16 +22,17 @@ type Square struct {
 	Color color.Color
 }
 
+type Grid [gridWidth][gridHeight]*Square
 type Game struct {
-	Grid               [gridWidth][gridHeight + 2]*Square
-	currentPiece       Piece
-	pieceQueue         []Piece
+	Grid               Grid
+	currentPiece       *Piece
+	pieceQueue         []*Piece
 	nextTick           int
 	ticksSinceLastDrop int
 	bag                *SevenBag
-	holdPiece          Piece
+	holdPiece          *Piece
 	hasHeld            bool
-	ghostPiece         Piece
+	ghostPiece         *Piece
 	gameOver           bool
 	das                int
 	arr                int
@@ -43,7 +44,7 @@ func newGame() *Game {
 	game.bag = newSevenBag()
 
 	game.currentPiece = game.bag.getPiece()
-	game.pieceQueue = make([]Piece, 5)
+	game.pieceQueue = make([]*Piece, 5)
 	for i := 0; i < 5; i++ {
 		game.pieceQueue[i] = game.bag.getPiece()
 	}

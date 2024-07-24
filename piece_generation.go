@@ -4,9 +4,9 @@ import (
 	"math/rand/v2"
 )
 
-type SevenBag []Piece
+type SevenBag []*Piece
 
-func (bag *SevenBag) getPiece() Piece {
+func (bag *SevenBag) getPiece() *Piece {
 	if len(*bag) == 0 {
 		*bag = *newSevenBag()
 	}

@@ -38,7 +38,7 @@ func (g *Game) drawLayout(screen *ebiten.Image) {
 	for x := 0; x < gridWidth; x++ {
 		g.drawSquare(Square{Color: color.White}, x, -1, screen)
 	}
-	for y := -1; y < gridHeight+1; y++ {
+	for y := -1; y < gridHeight-2; y++ {
 		g.drawSquare(Square{Color: color.White}, -1, y, screen)
 		g.drawSquare(Square{Color: color.White}, gridWidth, y, screen)
 	}
@@ -84,7 +84,7 @@ func (g *Game) drawHold(screen *ebiten.Image) {
 		return
 	}
 	baseX := 70 - gridWidth/2*squareSize
-	baseY := 70 + gridHeight*squareSize
+	baseY := 10 + gridHeight*squareSize
 	for _, block := range g.holdPiece.BlockCoordinates() {
 		for x := 1; x < squareSize-1; x++ {
 			for y := 1; y < squareSize-1; y++ {
