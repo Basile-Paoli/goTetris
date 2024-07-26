@@ -3,16 +3,12 @@ package main
 import "image/color"
 
 type Piece struct {
-	color                       color.Color
+	Color                       color.Color
 	center                      [2]int
 	rotation                    int
 	clockWiseRotationMap        [4][][2]int
 	counterClockWiseRotationMap [4][][2]int
 	blockPositionsFromRotation  [4][][2]int
-}
-
-func (p *Piece) Color() color.Color {
-	return p.color
 }
 
 func (p *Piece) Drop() {
@@ -34,7 +30,7 @@ func (p *Piece) MoveToTop() {
 
 func (p *Piece) Copy() *Piece {
 	return &Piece{
-		color:                       p.color,
+		Color:                       p.Color,
 		center:                      p.center,
 		rotation:                    p.rotation,
 		clockWiseRotationMap:        p.clockWiseRotationMap,
@@ -120,7 +116,7 @@ func TPieceBlockPositionMap() [4][][2]int {
 }
 func NewTPiece() *Piece {
 	return &Piece{
-		color:                       color.RGBA{R: 153, G: 0, B: 255, A: 255},
+		Color:                       color.RGBA{R: 153, G: 0, B: 255, A: 255},
 		center:                      [2]int{},
 		rotation:                    0,
 		clockWiseRotationMap:        JLTSZClockwiseRotationMap(),
@@ -160,7 +156,7 @@ func NewIPiece() *Piece {
 	return &Piece{
 		rotation:                    0,
 		center:                      [2]int{},
-		color:                       color.RGBA{R: 0, G: 255, B: 255, A: 255},
+		Color:                       color.RGBA{R: 0, G: 255, B: 255, A: 255},
 		blockPositionsFromRotation:  IPieceBlockPositions(),
 		clockWiseRotationMap:        IClockwiseRotationMap(),
 		counterClockWiseRotationMap: ICounterClockwiseRotationMap(),
@@ -199,7 +195,7 @@ func OPieceBlockPositions() (res [4][][2]int) {
 
 func NewOPiece() *Piece {
 	return &Piece{
-		color:                       color.RGBA{R: 255, G: 255, B: 0, A: 255},
+		Color:                       color.RGBA{R: 255, G: 255, B: 0, A: 255},
 		center:                      [2]int{},
 		rotation:                    0,
 		blockPositionsFromRotation:  OPieceBlockPositions(),
@@ -218,7 +214,7 @@ func SPieceBlockPositions() [4][][2]int {
 }
 func NewSPiece() *Piece {
 	return &Piece{
-		color:                       color.RGBA{R: 0, G: 255, B: 0, A: 255},
+		Color:                       color.RGBA{R: 0, G: 255, B: 0, A: 255},
 		rotation:                    0,
 		center:                      [2]int{},
 		clockWiseRotationMap:        JLTSZClockwiseRotationMap(),
@@ -237,7 +233,7 @@ func ZPieceBlockPositions() [4][][2]int {
 }
 func NewZPiece() *Piece {
 	return &Piece{
-		color:                       color.RGBA{R: 255, G: 0, B: 0, A: 255},
+		Color:                       color.RGBA{R: 255, G: 0, B: 0, A: 255},
 		center:                      [2]int{},
 		rotation:                    0,
 		blockPositionsFromRotation:  ZPieceBlockPositions(),
@@ -257,7 +253,7 @@ func JPieceBlockPositions() [4][][2]int {
 
 func NewJPiece() *Piece {
 	return &Piece{
-		color:                       color.RGBA{R: 0, G: 0, B: 255, A: 255},
+		Color:                       color.RGBA{R: 0, G: 0, B: 255, A: 255},
 		rotation:                    0,
 		center:                      [2]int{},
 		blockPositionsFromRotation:  JPieceBlockPositions(),
@@ -276,7 +272,7 @@ func LPieceBlockPositions() [4][][2]int {
 }
 func NewLPiece() *Piece {
 	return &Piece{
-		color:                       color.RGBA{R: 255, G: 170, B: 0, A: 255},
+		Color:                       color.RGBA{R: 255, G: 170, B: 0, A: 255},
 		rotation:                    0,
 		center:                      [2]int{},
 		blockPositionsFromRotation:  LPieceBlockPositions(),

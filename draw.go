@@ -11,14 +11,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	g.drawGrid(screen)
 
-	if g.ghostPiece != nil {
-		g.drawGhostPiece(screen)
-	}
+	g.drawGhostPiece(screen)
 
-	if g.currentPiece != nil {
-		g.drawCurrentPiece(screen)
+	g.drawCurrentPiece(screen)
 
-	}
 	g.drawNext(screen)
 	g.drawHold(screen)
 }
@@ -55,7 +51,7 @@ func (g *Game) drawGrid(screen *ebiten.Image) {
 }
 
 func (g *Game) drawGhostPiece(screen *ebiten.Image) {
-	R, G, B, _ := g.currentPiece.Color().RGBA()
+	R, G, B, _ := g.currentPiece.Color.RGBA()
 	ghostColor := color.RGBA{R: uint8(R) / 3, G: uint8(G) / 3, B: uint8(B) / 3, A: 100}
 	for _, block := range g.ghostPiece.BlockCoordinates() {
 		g.drawSquare(Square{Color: ghostColor}, block[0], block[1], screen)
@@ -63,7 +59,7 @@ func (g *Game) drawGhostPiece(screen *ebiten.Image) {
 }
 func (g *Game) drawCurrentPiece(screen *ebiten.Image) {
 	for _, block := range g.currentPiece.BlockCoordinates() {
-		g.drawSquare(Square{Color: g.currentPiece.Color()}, block[0], block[1], screen)
+		g.drawSquare(Square{Color: g.currentPiece.Color}, block[0], block[1], screen)
 	}
 }
 func (g *Game) drawNext(screen *ebiten.Image) {
@@ -71,7 +67,7 @@ func (g *Game) drawNext(screen *ebiten.Image) {
 		for _, block := range piece.BlockCoordinates() {
 			for x := 1; x < nextPieceSquareSize-1; x++ {
 				for y := 1; y < nextPieceSquareSize-1; y++ {
-					screen.Set(520+x+block[0]*nextPieceSquareSize, 100+i*nextPieceSquareSize*4-block[1]*nextPieceSquareSize+y, piece.Color())
+					screen.Set(520+x+block[0]*nextPieceSquareSize, 100+i*nextPieceSquareSize*4-block[1]*nextPieceSquareSize+y, piece.Color)
 				}
 
 			}
@@ -88,7 +84,7 @@ func (g *Game) drawHold(screen *ebiten.Image) {
 	for _, block := range g.holdPiece.BlockCoordinates() {
 		for x := 1; x < squareSize-1; x++ {
 			for y := 1; y < squareSize-1; y++ {
-				screen.Set(baseX+x+block[0]*squareSize, baseY+y-block[1]*squareSize, g.holdPiece.Color())
+				screen.Set(baseX+x+block[0]*squareSize, baseY+y-block[1]*squareSize, g.holdPiece.Color)
 			}
 		}
 	}

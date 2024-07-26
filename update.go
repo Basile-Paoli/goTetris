@@ -32,6 +32,10 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) processInputs() {
+	if inpututil.IsKeyJustPressed(ebiten.KeySemicolon) {
+		*g = *newGame()
+		return
+	}
 	if ebiten.IsKeyPressed(ebiten.KeyA) {
 		g.das--
 		if g.das <= 0 {
@@ -72,9 +76,6 @@ func (g *Game) processInputs() {
 		g.das = defaultDAS
 	}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeySemicolon) {
-		*g = *newGame()
-	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyW) {
 		for g.dropPiece() {
 		}
@@ -142,7 +143,7 @@ func (g *Game) dropPiece() bool {
 
 func (g *Game) freezePiece() {
 	for _, block := range g.currentPiece.BlockCoordinates() {
-		g.Grid[block[0]][block[1]] = &Square{Color: g.currentPiece.Color()}
+		g.Grid[block[0]][block[1]] = &Square{Color: g.currentPiece.Color}
 	}
 
 }
