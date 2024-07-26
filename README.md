@@ -1,6 +1,13 @@
 # goTetris
 A modern Tetris game written in Go.
 
+## Code
+
+This project uses the ebiten library as a game engine.
+The update loop is divided between  :
+- the update function (in the update.go file) which handles the game logic 
+- the draw function (in the draw.go file) which displays the game content
+
 ## Features
 
 This game includes most of the modern features of a Tetris game, including:
