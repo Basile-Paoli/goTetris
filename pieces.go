@@ -14,19 +14,24 @@ type Piece struct {
 func (p *Piece) Color() color.Color {
 	return p.color
 }
+
 func (p *Piece) Drop() {
 	p.center[1]--
 }
+
 func (p *Piece) MoveLeft() {
 	p.center[0]--
 }
+
 func (p *Piece) MoveRight() {
 	p.center[0]++
 }
+
 func (p *Piece) MoveToTop() {
 	p.center = [2]int{gridWidth/2 - 1, gridHeight - 3}
 	p.rotation = 0
 }
+
 func (p *Piece) Copy() *Piece {
 	return &Piece{
 		color:                       p.color,
@@ -37,6 +42,7 @@ func (p *Piece) Copy() *Piece {
 		blockPositionsFromRotation:  p.blockPositionsFromRotation,
 	}
 }
+
 func (p *Piece) RotateClockwise(grid Grid) {
 	p.rotation = (p.rotation + 1) % 4
 
@@ -160,8 +166,6 @@ func NewIPiece() *Piece {
 		counterClockWiseRotationMap: ICounterClockwiseRotationMap(),
 	}
 }
-
-type OPiece struct{}
 
 func OPieceClockwiseRotationMap() [4][][2]int {
 	return [4][][2]int{

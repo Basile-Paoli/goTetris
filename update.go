@@ -82,7 +82,7 @@ func (g *Game) processInputs() {
 		g.ticksSinceLastDrop = ticksBeforeLock
 		return
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+	if ebiten.IsKeyPressed(ebiten.KeyS) {
 		for g.dropPiece() {
 		}
 	}
