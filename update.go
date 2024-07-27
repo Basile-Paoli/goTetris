@@ -32,61 +32,12 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) processInputs() {
+
 	if inpututil.IsKeyJustPressed(ebiten.KeySemicolon) {
 		*g = *newGame()
 		return
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyA) {
-		g.das--
-		if g.das <= 0 {
-			g.arr--
-			if g.arr <= 0 {
-				legal := true
-				for _, block := range g.currentPiece.BlockCoordinates() {
-					if block[0] == 0 || g.Grid[block[0]-1][block[1]] != nil {
-						legal = false
-					}
-				}
-				if legal {
-					g.currentPiece.MoveLeft()
-				}
-				g.arr = defaultARR
-			}
-		}
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyD) {
-		g.das--
-		if g.das <= 0 {
-			g.arr--
-			if g.arr <= 0 {
-				legal := true
-				for _, block := range g.currentPiece.BlockCoordinates() {
-					if block[0] == gridWidth-1 || g.Grid[block[0]+1][block[1]] != nil {
-						legal = false
-					}
-				}
-				if legal {
-					g.currentPiece.MoveRight()
-				}
-				g.arr = defaultARR
-			}
-		}
-	}
-	if !ebiten.IsKeyPressed(ebiten.KeyA) && !ebiten.IsKeyPressed(ebiten.KeyD) {
-		g.das = defaultDAS
-	}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyW) {
-		for g.dropPiece() {
-		}
-		g.nextTick = 0
-		g.ticksSinceLastDrop = ticksBeforeLock
-		return
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyS) {
-		for g.dropPiece() {
-		}
-	}
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		if g.holdPiece == nil {
 			g.currentPiece.MoveToTop()
@@ -122,12 +73,69 @@ func (g *Game) processInputs() {
 			g.currentPiece.MoveRight()
 		}
 	}
+
+	if ebiten.IsKeyPressed(ebiten.KeyA) && !ebiten.IsKeyPressed(ebiten.KeyD) {
+		g.das--
+		if g.das <= 0 {
+			g.arr--
+			if g.arr <= 0 {
+				legal := true
+				for _, block := range g.currentPiece.BlockCoordinates() {
+					if block[0] == 0 || g.Grid[block[0]-1][block[1]] != nil {
+						legal = false
+					}
+				}
+				if legal {
+					g.currentPiece.MoveLeft()
+				}
+				g.arr = defaultARR
+			}
+		}
+	}
+
+	if ebiten.IsKeyPressed(ebiten.KeyD) && !ebiten.IsKeyPressed(ebiten.KeyA) {
+		g.das--
+		if g.das <= 0 {
+			g.arr--
+			if g.arr <= 0 {
+				legal := true
+				for _, block := range g.currentPiece.BlockCoordinates() {
+					if block[0] == gridWidth-1 || g.Grid[block[0]+1][block[1]] != nil {
+						legal = false
+					}
+				}
+				if legal {
+					g.currentPiece.MoveRight()
+				}
+				g.arr = defaultARR
+			}
+		}
+	}
+
+	if !ebiten.IsKeyPressed(ebiten.KeyA) && !ebiten.IsKeyPressed(ebiten.KeyD) {
+		g.das = defaultDAS
+	}
+
 	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
 		g.currentPiece.RotateCounterClockwise(g.Grid)
 
 	}
+
 	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
 		g.currentPiece.RotateClockwise(g.Grid)
+	}
+
+	if ebiten.IsKeyPressed(ebiten.KeyS) {
+		for g.dropPiece() {
+		}
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyW) {
+		for g.dropPiece() {
+		}
+		g.nextTick = 0
+		g.ticksSinceLastDrop = ticksBeforeLock
+		return
 	}
 }
 

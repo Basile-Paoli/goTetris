@@ -23,6 +23,7 @@ type Square struct {
 }
 
 type Grid [gridWidth][gridHeight]*Square
+
 type Game struct {
 	Grid               Grid
 	currentPiece       *Piece
