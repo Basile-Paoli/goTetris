@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"tetris/grid"
 )
 
 func (g *Game) Update() error {
@@ -12,193 +13,156 @@ func (g *Game) Update() error {
 
 	g.processInputs()
 
-	if g.nextTick == 0 {
-		if !g.dropPiece() {
-			g.ticksSinceLastDrop++
-
-			if g.ticksSinceLastDrop >= ticksBeforeLock {
-				g.freezePiece()
-				g.lineDestruction()
-				g.nextPiece()
-				g.ticksSinceLastDrop = 0
-				g.hasHeld = false
-			}
-		}
-		g.nextTick = tickDuration
+	if g.nextTick > 0 {
+		g.nextTick--
+		return nil
 	}
-	g.setGhostPiece()
-	g.nextTick--
+
+	if !g.dropCurrentPiece() {
+		g.ticksSinceLastDrop++
+
+		if g.ticksSinceLastDrop >= g.config.ticksBeforeLock {
+			g.handleLock()
+		}
+	}
+
+	g.nextTick = g.config.tickDuration - 1
 	return nil
 }
 
-func (g *Game) processInputs() {
+func (g *Game) handleLock() {
+	g.freezePiece()
+	g.lineDestruction()
+	g.nextPiece()
+	g.ticksSinceLastDrop = 0
+	g.hasHeld = false
+}
 
+func (g *Game) processInputs() {
 	if inpututil.IsKeyJustPressed(ebiten.KeySemicolon) {
 		*g = *newGame()
 		return
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-		if g.holdPiece == nil {
-			g.currentPiece.MoveToTop()
-			g.holdPiece = g.currentPiece
-			g.nextPiece()
-		} else if !g.hasHeld {
-			g.currentPiece.MoveToTop()
-			g.currentPiece, g.holdPiece = g.holdPiece, g.currentPiece
-		}
-		g.hasHeld = true
+		g.switchPiece()
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyA) {
-		legal := true
-		for _, block := range g.currentPiece.BlockCoordinates() {
-			if block[0] == 0 || g.Grid[block[0]-1][block[1]] != nil {
-				legal = false
-			}
-		}
-		if legal {
-			g.currentPiece.MoveLeft()
-		}
+		g.currentPiece.MoveLeft(g.grid)
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyD) {
-		legal := true
-		for _, block := range g.currentPiece.BlockCoordinates() {
-			if block[0] == gridWidth-1 || g.Grid[block[0]+1][block[1]] != nil {
-				legal = false
-			}
-		}
-		if legal {
-			g.currentPiece.MoveRight()
-		}
+		g.currentPiece.MoveRight(g.grid)
 	}
 
-	if ebiten.IsKeyPressed(ebiten.KeyA) && !ebiten.IsKeyPressed(ebiten.KeyD) {
-		g.das--
-		if g.das <= 0 {
-			g.arr--
-			if g.arr <= 0 {
-				legal := true
-				for _, block := range g.currentPiece.BlockCoordinates() {
-					if block[0] == 0 || g.Grid[block[0]-1][block[1]] != nil {
-						legal = false
-					}
-				}
-				if legal {
-					g.currentPiece.MoveLeft()
-				}
-				g.arr = defaultARR
-			}
-		}
-	}
-
-	if ebiten.IsKeyPressed(ebiten.KeyD) && !ebiten.IsKeyPressed(ebiten.KeyA) {
-		g.das--
-		if g.das <= 0 {
-			g.arr--
-			if g.arr <= 0 {
-				legal := true
-				for _, block := range g.currentPiece.BlockCoordinates() {
-					if block[0] == gridWidth-1 || g.Grid[block[0]+1][block[1]] != nil {
-						legal = false
-					}
-				}
-				if legal {
-					g.currentPiece.MoveRight()
-				}
-				g.arr = defaultARR
-			}
-		}
-	}
-
-	if !ebiten.IsKeyPressed(ebiten.KeyA) && !ebiten.IsKeyPressed(ebiten.KeyD) {
-		g.das = defaultDAS
+	if ebiten.IsKeyPressed(ebiten.KeyA) || ebiten.IsKeyPressed(ebiten.KeyD) {
+		g.performDas()
+	} else {
+		g.das = g.config.das
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
-		g.currentPiece.RotateCounterClockwise(g.Grid)
-
+		g.currentPiece.RotateCounterClockwise(g.grid)
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
-		g.currentPiece.RotateClockwise(g.Grid)
+		g.currentPiece.RotateClockwise(g.grid)
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
-		for g.dropPiece() {
-		}
+		g.softDrop()
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyW) {
-		for g.dropPiece() {
-		}
-		g.nextTick = 0
-		g.ticksSinceLastDrop = ticksBeforeLock
-		return
+		g.hardDrop()
 	}
 }
 
-func (g *Game) dropPiece() bool {
-	for _, block := range g.currentPiece.BlockCoordinates() {
-		if block[1] == 0 || g.Grid[block[0]][block[1]-1] != nil {
-			return false
-		}
+func (g *Game) switchPiece() {
+
+	if g.holdPiece.IsNull() {
+		g.holdPiece = g.currentPiece
+		g.nextPiece()
+	} else if !g.hasHeld {
+		g.currentPiece, g.holdPiece = g.holdPiece, g.currentPiece
+		g.currentPiece.MoveToTop()
 	}
-	g.currentPiece.Drop()
+	g.hasHeld = true
+}
+
+func (g *Game) shouldMoveFromDas() bool {
+	g.das--
+	if g.das > 0 {
+		return false
+	}
+	g.arr--
+	if g.arr > 0 {
+		return false
+	}
+
+	g.arr = g.config.arr
 	return true
+}
+
+func (g *Game) performDas() {
+	if !g.shouldMoveFromDas() {
+		return
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyA) {
+		g.currentPiece.MoveLeft(g.grid)
+	}
+
+	if ebiten.IsKeyPressed(ebiten.KeyD) {
+		g.currentPiece.MoveRight(g.grid)
+	}
+}
+
+func (g *Game) softDrop() {
+
+	if g.config.softDropRate == 0 {
+		for g.dropCurrentPiece() {
+		}
+		return
+	}
+
+	if g.softDropDelay <= 0 {
+		g.dropCurrentPiece()
+		g.softDropDelay = g.config.softDropRate
+	}
+	g.softDropDelay--
+}
+
+func (g *Game) hardDrop() {
+	for g.dropCurrentPiece() {
+	}
+	g.handleLock()
+}
+
+func (g *Game) dropCurrentPiece() (dropped bool) {
+	return g.currentPiece.MoveDown(g.grid)
 }
 
 func (g *Game) freezePiece() {
 	for _, block := range g.currentPiece.BlockCoordinates() {
-		g.Grid[block[0]][block[1]] = &Square{Color: g.currentPiece.Color}
+		g.grid[block.X][block.Y] = g.currentPiece.Color
 	}
-
 }
 
 func (g *Game) nextPiece() {
-	g.currentPiece = g.pieceQueue[0]
+	g.currentPiece = g.pieceQueue.Next()
 	g.currentPiece.MoveToTop()
-	g.pieceQueue = append(g.pieceQueue[1:], g.bag.getPiece())
 	for _, block := range g.currentPiece.BlockCoordinates() {
-		if g.Grid[block[0]][block[1]] != nil {
+		if g.grid.IsOccupiedSquare(block.X, block.Y) {
 			g.gameOver = true
 		}
 	}
 }
 
-func (g *Game) setGhostPiece() {
-	g.ghostPiece = g.currentPiece.Copy()
-	for {
-		for _, block := range g.ghostPiece.BlockCoordinates() {
-			if block[1] == 0 || g.Grid[block[0]][block[1]-1] != nil {
-				return
-			}
-		}
-		g.ghostPiece.Drop()
-	}
-}
-
 func (g *Game) lineDestruction() {
-	for y := 0; y < gridHeight; y++ {
-		full := true
-		for x := 0; x < gridWidth; x++ {
-			if g.Grid[x][y] == nil {
-				full = false
-				break
-			}
+	for y := range grid.Height {
+		for g.grid.IsLineFull(y) {
+			g.grid.DestroyLine(y)
 		}
-		if full {
-			for x := 0; x < gridWidth; x++ {
-				g.Grid[x][y] = nil
-			}
-			for y2 := y; y2 < gridHeight-1; y2++ {
-				for x := 0; x < gridWidth; x++ {
-					g.Grid[x][y2] = g.Grid[x][y2+1]
-				}
-			}
-			y--
-		}
-
 	}
 }
