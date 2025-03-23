@@ -144,7 +144,7 @@ func (g *Game) dropCurrentPiece() (dropped bool) {
 }
 
 func (g *Game) freezePiece() {
-	for _, block := range g.currentPiece.BlockCoordinates() {
+	for _, block := range g.currentPiece.CurrentBlockPositions() {
 		g.grid[block.X][block.Y] = g.currentPiece.Color
 	}
 }
@@ -152,7 +152,7 @@ func (g *Game) freezePiece() {
 func (g *Game) nextPiece() {
 	g.currentPiece = g.pieceQueue.Next()
 	g.currentPiece.MoveToTop()
-	for _, block := range g.currentPiece.BlockCoordinates() {
+	for _, block := range g.currentPiece.CurrentBlockPositions() {
 		if g.grid.IsOccupiedSquare(block.X, block.Y) {
 			g.gameOver = true
 		}

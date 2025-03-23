@@ -64,28 +64,23 @@ func (g *Game) drawGhostPiece(screen *ebiten.Image) {
 	R, G, B, _ := g.currentPiece.Color.RGBA()
 	ghostColor := color.RGBA{R: uint8(R) / 3, G: uint8(G) / 3, B: uint8(B) / 3, A: 255}
 	ghostPiece := g.ghostPiece()
-	for _, block := range ghostPiece.BlockCoordinates() {
+	for _, block := range ghostPiece.CurrentBlockPositions() {
 		drawSquare(ghostColor, block.X, block.Y, screen)
 	}
 }
 
 func (g *Game) drawCurrentPiece(screen *ebiten.Image) {
-	for _, block := range g.currentPiece.BlockCoordinates() {
+	for _, block := range g.currentPiece.CurrentBlockPositions() {
 		drawSquare(g.currentPiece.Color, block.X, block.Y, screen)
 	}
 }
 
 func (g *Game) drawNext(screen *ebiten.Image) {
 	for i, p := range g.pieceQueue.Pieces() {
-		for _, block := range p.DefaultBlockCoordinates() {
+		for _, block := range p.DefaultBlockPositions() {
 			baseX := screenWidth - NextPieceRightPadding + block.X*nextPieceSquareSize
 			baseY := NextPieceTopPadding + i*nextPieceSize - block.Y*nextPieceSquareSize
-
-			for x := 1; x < nextPieceSquareSize-1; x++ {
-				for y := 1; y < nextPieceSquareSize-1; y++ {
-					screen.Set(baseX+x, baseY+y, p.Color)
-				}
-			}
+			drawRectangle(p.Color, baseX, baseY, nextPieceSquareSize-2, nextPieceSquareSize-2, screen)
 		}
 	}
 }
@@ -94,24 +89,26 @@ func (g *Game) drawHold(screen *ebiten.Image) {
 	if g.holdPiece.IsNull() {
 		return
 	}
-	baseX := gridLeftPadding - (4 * squareSize)
+	baseX := gridLeftPadding - int(4.5*squareSize)
 	baseY := 4 * squareSize
 
-	for _, block := range g.holdPiece.DefaultBlockCoordinates() {
-		for x := 1; x < squareSize-1; x++ {
-			for y := 1; y < squareSize-1; y++ {
-				screen.Set(baseX+x+block.X*squareSize, baseY+y-block.Y*squareSize, g.holdPiece.Color)
-			}
-		}
+	for _, block := range g.holdPiece.DefaultBlockPositions() {
+		x := baseX + block.X*squareSize + 1
+		y := baseY - block.Y*squareSize + 1
+		drawRectangle(g.holdPiece.Color, x, y, squareSize-2, squareSize-2, screen)
 	}
 }
 
 func drawSquare(square grid.Square, column, row int, screen *ebiten.Image) {
-	baseX := gridLeftPadding + column*squareSize
-	baseY := screenHeight - (row+2)*squareSize
-	for i := 1; i < squareSize-1; i++ {
-		for j := 1; j < squareSize-1; j++ {
-			screen.Set(baseX+i, baseY+j, square)
+	baseX := gridLeftPadding + column*squareSize + 1
+	baseY := screenHeight - (row+2)*squareSize + 1
+	drawRectangle(square, baseX, baseY, squareSize-2, squareSize-2, screen)
+}
+
+func drawRectangle(color color.Color, x, y, width, height int, screen *ebiten.Image) {
+	for i := 0; i < width; i++ {
+		for j := 0; j < height; j++ {
+			screen.Set(x+i, y+j, color)
 		}
 	}
 }

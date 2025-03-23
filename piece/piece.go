@@ -28,7 +28,7 @@ func (p *Piece) IsNull() bool {
 }
 
 func (p *Piece) MoveDown(g grid.Grid) bool {
-	for _, block := range p.BlockCoordinates() {
+	for _, block := range p.CurrentBlockPositions() {
 		if !g.IsEmptySquare(block.X, block.Y-1) {
 			return false
 		}
@@ -38,7 +38,7 @@ func (p *Piece) MoveDown(g grid.Grid) bool {
 }
 
 func (p *Piece) MoveLeft(grid grid.Grid) {
-	for _, block := range p.BlockCoordinates() {
+	for _, block := range p.CurrentBlockPositions() {
 		if !grid.IsEmptySquare(block.X-1, block.Y) {
 			return
 		}
@@ -47,7 +47,7 @@ func (p *Piece) MoveLeft(grid grid.Grid) {
 }
 
 func (p *Piece) MoveRight(grid grid.Grid) {
-	for _, block := range p.BlockCoordinates() {
+	for _, block := range p.CurrentBlockPositions() {
 		if !grid.IsEmptySquare(block.X+1, block.Y) {
 			return
 		}
@@ -61,7 +61,7 @@ func (p *Piece) MoveToTop() {
 }
 
 func (p *Piece) isValidMovement(grid grid.Grid, translationVector vector) bool {
-	for _, block := range p.BlockCoordinates() {
+	for _, block := range p.CurrentBlockPositions() {
 		x, y := block.X+translationVector.x, block.Y+translationVector.y
 		if !grid.IsEmptySquare(x, y) {
 			return false
@@ -70,16 +70,14 @@ func (p *Piece) isValidMovement(grid grid.Grid, translationVector vector) bool {
 	return true
 }
 
-func (p *Piece) BlockCoordinates() [4]Position {
-	var blocks [4]Position
-	for i, vec := range p.blockPositionsFromRotation[p.rotation] {
-		blocks[i].X = vec.x + p.center.X
-		blocks[i].Y = vec.y + p.center.Y
+func (p *Piece) CurrentBlockPositions() (blocks []Position) {
+	for _, vec := range p.blockPositionsFromRotation[p.rotation] {
+		blocks = append(blocks, Position{p.center.X + vec.x, p.center.Y + vec.y})
 	}
 	return blocks
 }
 
-func (p *Piece) DefaultBlockCoordinates() (positions []Position) {
+func (p *Piece) DefaultBlockPositions() (positions []Position) {
 	for _, vec := range p.blockPositionsFromRotation[0] {
 		positions = append(positions, Position{vec.x, vec.y})
 	}
